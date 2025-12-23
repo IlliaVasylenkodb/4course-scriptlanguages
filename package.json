@@ -1,1 +1,0 @@
-{"name": "modulesapp", "version": "1.0.0", "scripts": {"test": "jest", "start": "node start.js"}, "dependencies": {"express": "^5.2.1", "dotenv": "^17.2.3"}, "devDependencies": {"jest": "^30.0.0", "supertest": "^7.1.3"}}
