@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>База футболістів</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container">
+        <h2>Мій футбольний склад</h2>
+        <form name="playerForm">
+            <input type="hidden" name="id" value="0" />
+            <div class="form-group">
+                <label>Прізвище гравця:</label>
+                <input class="form-control" name="name" placeholder="Наприклад: Шевченко" />
+            </div>
+            <div class="form-group">
+                <label>Позиція:</label>
+                <input class="form-control" name="position" placeholder="Наприклад: Нападник" />
+            </div>
+            <div class="form-group">
+                <label>Забиті голи:</label>
+                <input class="form-control" name="goals" type="number" />
+            </div>
+            <div class="panel-body">
+                <button type="submit" class="btn btn-sm btn-primary">Додати гравця</button>
+            </div>
+        </form>
+        <table class="table table-condensed table-striped table-bordered">
+            <thead><tr><th>№</th><th>Гравець</th><th>Позиція</th><th>Голи</th><th>Дії</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        async function GetPlayers() {
+            const response = await fetch("/api/players", {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok) {
+                const players = await response.json();
+                let rows = document.querySelector("tbody");
+                players.forEach(p => rows.append(createRow(p)));
+            }
+        }
+
+        async function CreatePlayer(name, position, goals) {
+            const response = await fetch("api/players", {
+                method: "POST",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({ name, position, goals: parseInt(goals, 10) })
+            });
+            if (response.ok) {
+                const player = await response.json();
+                document.querySelector("tbody").append(createRow(player));
+                document.forms["playerForm"].reset();
+            }
+        }
+
+        async function DeletePlayer(id) {
+            const response = await fetch("/api/players/" + id, {
+                method: "DELETE",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok) {
+                document.querySelector(`tr[data-rowid='${id}']`).remove();
+            }
+        }
+
+        function createRow(player) {
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-rowid", player._id);
+            tr.innerHTML = `<td>${player._id}</td><td>${player.name}</td><td>${player.position}</td><td>${player.goals}</td>
+                <td><a onclick="DeletePlayer('${player._id}')" style="cursor:pointer">Видалити</a></td>`;
+            return tr;
+        }
+
+        document.forms["playerForm"].addEventListener("submit", e => {
+            e.preventDefault();
+            const form = document.forms["playerForm"];
+            CreatePlayer(form.elements["name"].value, form.elements["position"].value, form.elements["goals"].value);
+        });
+
+        GetPlayers();
+    </script>
+</body>
+</html>
